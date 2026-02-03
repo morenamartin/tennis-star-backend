@@ -12,9 +12,10 @@ class CreateSaleItemDto {
     quantity!: number;
 
     @IsNumber()
-    @IsNotEmpty()
-    price!: number;
+    @IsOptional()
+    total?: number;
 }
+
 
 enum PaymentMethod {
     CASH = 'CASH',
@@ -37,8 +38,9 @@ export class CreateSalesDto {
     paymentMethod!: PaymentMethod;
 
     @IsNumber()
-    @IsNotEmpty()
-    total!: number;
+    @IsOptional()
+    total?: number;
+
 
     @IsString()
     @IsNotEmpty()

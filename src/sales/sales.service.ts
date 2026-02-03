@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateSalesDto } from "./dto/create-sales-dto";
-import { SaleStatus } from "generated/prisma/enums";
 import { UpdateStatusDto } from "./dto/update-status-dto";
 
 @Injectable()
@@ -12,21 +11,52 @@ export class SalesService {
         const orderNumber = this.generateOrderNumber();
         const trackingCode = this.generateTrackingCode();
 
+        // 1. Get all variant IDs to fetch their prices
+        const variantIds = data.items.map(item => item.variantId);
+
+        // 2. Fetch variants from database
+        const variants = await this.prisma.productVariant.findMany({
+            where: { id: { in: variantIds } },
+            select: { id: true, price: true }
+        });
+
+        // 3. Create a map for quick access
+        const variantPriceMap = new Map(variants.map(v => [v.id, Number(v.price)]));
+
+        // 4. Calculate items with their totals and the grand total
+        let grandTotal = 0;
+        const itemsToCreate = data.items.map(item => {
+            const unitPrice = variantPriceMap.get(item.variantId) || 0;
+            const itemTotal = unitPrice * item.quantity;
+            grandTotal += itemTotal;
+
+            return {
+                variantId: item.variantId,
+                quantity: item.quantity,
+                total: itemTotal
+            };
+        });
+
+        // 5. Create the sale with calculated data
+        const { items, total, ...saleData } = data; // Exclude original items and total if provided
+
         return this.prisma.sale.create({
             data: {
-                ...data,
+                ...saleData,
                 orderNumber,
                 trackingCode,
+                total: grandTotal,
                 items: {
-                    create: data.items.map(item => ({
-                        variantId: item.variantId,
-                        quantity: item.quantity,
-                        price: item.price
-                    }))
+                    create: itemsToCreate
                 }
+            },
+            include: {
+                items: true
             }
-        })
+        });
     }
+
+
 
     private generateOrderNumber(): string {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -47,19 +77,15 @@ export class SalesService {
 
     async findAll() {
         return this.prisma.sale.findMany({
-            include: {
-                client: { select: { id: true, name: true, email: true, phone: true } },
-                items: {
-                    select: {
-                        quantity: true,
-                        price: true,
-                        variant: {
-                            include: {
-                                product: { select: { id: true, name: true, images: true } }
-                            }
-                        }
-                    }
-                }
+            select: {
+                id: true,
+                orderNumber: true,
+                total: true,
+                status: true,
+                paymentStatus: true,
+                paymentMethod: true,
+                createdAt: true,
+                client: { select: { name: true, email: true } }
             }
         })
     }
@@ -78,7 +104,7 @@ export class SalesService {
                 items: {
                     select: {
                         quantity: true,
-                        price: true,
+                        total: true,
                         variant: {
                             include: {
                                 product: { select: { id: true, name: true, images: true } }

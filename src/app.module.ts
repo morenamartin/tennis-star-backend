@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { SalesModule } from './sales/sales.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { SalesModule } from './sales/sales.module';
     AuthModule,
     CategoriesModule,
     ProductsModule,
-    SalesModule
+    SalesModule,
+    CloudinaryModule
   ],
   controllers: [AppController],
   providers: [AppService],

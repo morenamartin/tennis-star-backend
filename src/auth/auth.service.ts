@@ -27,7 +27,9 @@ export class AuthService {
             email: dbUser.email
         };
 
-        const token = this.jwtService.sign(userPayload);
+        const token = this.jwtService.sign(userPayload, {
+            expiresIn: user.rememberMe ? '30d' : '2h'
+        });
 
         const result: any = {
             success: "User logged in successfully",

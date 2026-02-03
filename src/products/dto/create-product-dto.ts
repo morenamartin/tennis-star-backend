@@ -11,19 +11,34 @@ interface ProductOptions {
 interface ProductVariant {
     sku: string;
     price: number;
-    stock: number;
+    stock?: number;
     attributes: Record<string, any>;
 }
 
 export class CreateProductDto {
     name!: string;
     description!: string;
-    stock!: number;
+    stock?: number;
     gender!: string;
     brand!: string;
-    images!: string | string[];
     status?: ProductStatus.ACTIVE;
     categoryId!: string;
+    skuType!: 'UNIQUE' | 'PER_VARIANT';
+    baseSku?: string;
     options!: ProductOptions[];
     variants!: ProductVariant[];
-}   
+}
+
+export class CreateProductFormDto {
+    name!: string;
+    description!: string;
+    stock?: number;
+    gender!: string;
+    brand!: string;
+    categoryId!: string;
+    skuType!: 'UNIQUE' | 'PER_VARIANT';
+
+    // 👇 llegan como string
+    options!: string;
+    variants!: string;
+}

@@ -59,11 +59,8 @@ export class CategoriesService {
                 id: true,
                 name: true,
                 position: true,
-                createdAt: true,
-                updatedAt: true,
                 parent: true,
                 subCategories: true,
-                products: true,
             },
         });
     }
