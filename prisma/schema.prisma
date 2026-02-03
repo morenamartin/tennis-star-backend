@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider   = "prisma-client"
+  output     = "../generated/prisma"
+  engineType = "library"
 }
 
 datasource db {
@@ -23,6 +24,7 @@ model User {
   resetPasswordTokenExp DateTime? 
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  saleHistory           SaleHistory[]
 }
 
 model Category {
@@ -35,7 +37,7 @@ model Category {
   parent        Category?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: SetNull)
   subCategories Category[] @relation("SubCategories")
 
-  // Relación con productos (se usará en el siguiente módulo)
+  // Relación con productos 
   products Product[]
 
   createdAt DateTime @default(now())
@@ -47,14 +49,21 @@ enum ProductStatus {
   INACTIVE
 }
 
+enum ProductGender {
+  MALE
+  FEMALE
+  UNISEX
+}
+
 model Product {
   id          String        @id @default(uuid())
   name        String
   description String?       @db.Text
-  gender      String
+  gender      ProductGender
   brand       String
   images      String[]
   status      ProductStatus @default(ACTIVE)
+  stock       Int     @default(0)
 
   // Relación con Categoría
   categoryId String
@@ -76,15 +85,9 @@ model ProductOption {
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  values OptionValue[]
+  values String[]
 }
 
-model OptionValue {
-  id              String        @id @default(uuid())
-  value           String
-  productOptionId String
-  productOption   ProductOption @relation(fields: [productOptionId], references: [id], onDelete: Cascade)
-}
 
 model ProductVariant {
   id    String  @id @default(uuid())
@@ -118,6 +121,13 @@ enum SaleStatus {
   PAID
   SHIPPED
   CANCELLED
+  COMPLETED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
 }
 
 enum PaymentStatus {
@@ -137,7 +147,7 @@ model Sale {
   client   Client @relation(fields: [clientId], references: [id])
 
   // Pago
-  paymentMethod String
+  paymentMethod PaymentMethod
   paymentStatus PaymentStatus @default(PENDING)
   total         Decimal       @db.Decimal(10, 2)
 
@@ -160,6 +170,9 @@ model SaleHistory {
 
   saleId String
   sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   status SaleStatus
   note   String?
