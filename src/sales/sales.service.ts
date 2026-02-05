@@ -96,8 +96,14 @@ export class SalesService {
             include: {
                 client: { select: { id: true, name: true, email: true, phone: true } },
                 history: {
-                    include: {
-                        user: { select: { id: true, name: true, email: true } }
+                    select: {
+                        id: true,
+                        userId: false,
+                        saleId: false,
+                        status: true,
+                        note: true,
+                        createdAt: true,
+                        user: { select: { id: true, name: true } }
                     },
                     orderBy: { createdAt: 'desc' }
                 },

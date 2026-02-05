@@ -52,6 +52,13 @@ export class CategoriesService {
     async getCategoryById(categoryId: string) {
         return this.prisma.category.findUnique({
             where: { id: categoryId },
+            select: {
+                id: true,
+                name: true,
+                position: true,
+                parent: true,
+                subCategories: true,
+            },
         });
     }
 
@@ -79,13 +86,44 @@ export class CategoriesService {
         });
 
         if (existingPosition) {
-            throw new ConflictException(`Category with position ${position} already exists`);
+            throw new ConflictException(`La posición ${position} ya está ocupada`);
         }
 
         return this.prisma.category.update({
             where: { id: categoryId },
             data: { position },
         });
+    }
+
+    async updateCategory(categoryId: string, data: { name?: string; position?: number; parentId?: string | null }) {
+        const updateData: any = {};
+
+        if (data.name) updateData.name = data.name;
+        if (data.position !== undefined) updateData.position = data.position;
+        
+        if (data.parentId !== undefined) {
+            if (data.parentId === null || data.parentId === 'root') {
+                updateData.parent = { disconnect: true };
+            } else {
+                updateData.parent = { connect: { id: data.parentId } };
+            }
+        }
+
+        try {
+            return await this.prisma.category.update({
+                where: { id: categoryId },
+                data: updateData,
+                include: {
+                    parent: true,
+                    subCategories: true,
+                },
+            });
+        } catch (error: any) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`Categoría con ID "${categoryId}" no encontrada`);
+            }
+            throw error;
+        }
     }
 
     async deleteCategory(categoryId: string) {

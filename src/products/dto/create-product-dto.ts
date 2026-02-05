@@ -19,7 +19,6 @@ export class CreateProductDto {
     name!: string;
     description!: string;
     stock?: number;
-    gender!: string;
     brand!: string;
     status?: ProductStatus.ACTIVE;
     categoryId!: string;

@@ -1,7 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product-dto';
-import { ProductGender } from 'generated/prisma/enums';
 import { UpdateProductDto } from './dto/update-product-dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
@@ -64,7 +63,7 @@ export class ProductsService {
             );
         }
 
-        const { categoryId, options, variants, skuType, baseSku, gender, ...rest } = product;
+        const { categoryId, options, variants, skuType, baseSku, ...rest } = product;
 
         const validAttributes = this.generateVariantsFromOptions(options);
 
@@ -123,7 +122,6 @@ export class ProductsService {
                     ...rest,
                     images: imageUrls,
                     stock: Number(product.stock),
-                    gender: gender as ProductGender,
                     category: { connect: { id: categoryId } },
                     options: { create: options },
                     variants: { create: variants },
@@ -184,7 +182,7 @@ export class ProductsService {
     }
 
     async updateProduct(productId: string, product: UpdateProductDto) {
-        const { categoryId, images, options, variants, gender, ...rest } = product;
+        const { categoryId, images, options, variants, ...rest } = product;
 
         try {
             return await this.prisma.product.update({
@@ -193,9 +191,6 @@ export class ProductsService {
                     ...rest,
                     ...(images && {
                         images: Array.isArray(images) ? images : [images],
-                    }),
-                    ...(gender && {
-                        gender: gender as ProductGender,
                     }),
                     ...(categoryId && {
                         category: { connect: { id: categoryId } },
@@ -217,6 +212,90 @@ export class ProductsService {
         } catch (error: any) {
             if (error.code === 'P2025') {
                 throw new NotFoundException(`Product with ID "${productId}" not found`);
+            }
+            throw error;
+        }
+    }
+
+    async updateProductWithImages(productId: string, product: UpdateProductDto, newImages?: Express.Multer.File[]) {
+        const existingProduct = await this.prisma.product.findUnique({
+            where: { id: productId },
+        });
+
+        if (!existingProduct) {
+            throw new NotFoundException(`Product with ID "${productId}" not found`);
+        }
+
+        let finalImages = product.images ? (Array.isArray(product.images) ? product.images : [product.images]) : [];
+
+        if (newImages && newImages.length > 0) {
+            const slug = existingProduct.name.toLowerCase().replace(/\s+/g, '-');
+            const uploadedImages = await this.cloudinaryService.uploadImages(
+                newImages,
+                `tennis-star/products/${slug}`,
+            );
+            const newImageUrls = uploadedImages.map(img => img.secure_url);
+            finalImages = [...finalImages, ...newImageUrls];
+        }
+
+        const { categoryId, images, options, variants, ...rest } = product;
+
+        try {
+            return await this.prisma.product.update({
+                where: { id: productId },
+                data: {
+                    ...rest,
+                    images: finalImages,
+                    ...(categoryId && {
+                        category: { connect: { id: categoryId } },
+                    }),
+                    ...(options && {
+                        options: {
+                            deleteMany: {},
+                            create: options,
+                        },
+                    }),
+                    ...(variants && {
+                        variants: {
+                            deleteMany: {},
+                            create: variants,
+                        },
+                    }),
+                },
+            });
+        } catch (error: any) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`Product with ID "${productId}" not found`);
+            }
+            throw error;
+        }
+    }
+
+    async updateVariant(variantId: string, data: { price?: number; stock?: number }) {
+        try {
+            return await this.prisma.productVariant.update({
+                where: { id: variantId },
+                data: {
+                    ...(data.price !== undefined && { price: data.price }),
+                    ...(data.stock !== undefined && { stock: data.stock }),
+                },
+            });
+        } catch (error: any) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`Variant with ID "${variantId}" not found`);
+            }
+            throw error;
+        }
+    }
+
+    async deleteVariant(variantId: string) {
+        try {
+            return await this.prisma.productVariant.delete({
+                where: { id: variantId },
+            });
+        } catch (error: any) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`Variant with ID "${variantId}" not found`);
             }
             throw error;
         }

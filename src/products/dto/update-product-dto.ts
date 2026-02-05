@@ -3,7 +3,6 @@ import { ProductStatus } from "./create-product-dto";
 export class UpdateProductDto {
     name?: string;
     description?: string;
-    gender?: string;
     brand?: string;
     stock?: number;
     status?: ProductStatus;

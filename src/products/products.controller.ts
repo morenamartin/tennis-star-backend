@@ -3,6 +3,7 @@ import { ProductsService } from "./products.service";
 import { CreateProductDto, CreateProductFormDto } from "./dto/create-product-dto";
 import { PreviewVariantsDto } from "./dto/preview-variants-dto";
 import { UpdateProductDto } from "./dto/update-product-dto";
+import { UpdateVariantDto } from "./dto/update-variant-dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
 
 @Controller("products")
@@ -50,5 +51,36 @@ export class ProductsController {
     @Patch(":id")
     async updateProduct(@Param("id") id: string, @Body() product: UpdateProductDto) {
         return this.productsService.updateProduct(id, product);
+    }
+
+    @Patch(":id/with-images")
+    @UseInterceptors(FilesInterceptor('newImages'))
+    async updateProductWithImages(
+        @Param("id") id: string,
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body() body: any
+    ) {
+        const updateData: UpdateProductDto = {
+            ...(body.name && { name: body.name }),
+            ...(body.description && { description: body.description }),
+            ...(body.brand && { brand: body.brand }),
+            ...(body.status && { status: body.status }),
+            ...(body.stock && { stock: parseInt(body.stock) }),
+            ...(body.existingImages && { images: JSON.parse(body.existingImages) }),
+        };
+        return this.productsService.updateProductWithImages(id, updateData, files);
+    }
+
+    @Patch("variants/:variantId")
+    async updateVariant(
+        @Param("variantId") variantId: string,
+        @Body() data: UpdateVariantDto
+    ) {
+        return this.productsService.updateVariant(variantId, data);
+    }
+
+    @Delete("variants/:variantId")
+    async deleteVariant(@Param("variantId") variantId: string) {
+        return this.productsService.deleteVariant(variantId);
     }
 }   

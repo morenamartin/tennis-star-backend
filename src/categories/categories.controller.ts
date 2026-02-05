@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/categories-dto';
+import { UpdateCategoryDto } from './dto/update-category-dto';
 
 @Controller("categories")
 export class CategoriesController {
@@ -29,6 +30,14 @@ export class CategoriesController {
         @Query("position", ParseIntPipe) position: number
     ) {
         return this.categoriesService.updateCategoryPosition(id, position);
+    }
+
+    @Patch(":id")
+    async updateCategory(
+        @Param("id") id: string,
+        @Body() data: UpdateCategoryDto
+    ) {
+        return this.categoriesService.updateCategory(id, data);
     }
 
     @Delete(":id")
