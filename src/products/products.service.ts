@@ -165,6 +165,7 @@ export class ProductsService {
                 images: true,
                 status: true,
                 category: { select: { name: true } },
+                variants: true,
             },
         });
     }

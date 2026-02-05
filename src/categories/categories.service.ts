@@ -17,7 +17,7 @@ export class CategoriesService {
         });
 
         if (existingName) {
-            throw new ConflictException(`Category with name "${category.name}" already exists`);
+            throw new ConflictException(`Categoría con nombre "${category.name}" ya existe`);
         }
 
         // Check if position exists
@@ -26,19 +26,24 @@ export class CategoriesService {
         });
 
         if (existingPosition) {
-            throw new ConflictException(`Category with position ${category.position} already exists`);
+            throw new ConflictException(`Categoría con posición ${category.position} ya existe`);
         }
 
         try {
-            return await this.prisma.category.create({
+            const newCategory = await this.prisma.category.create({
                 data: {
                     ...rest,
                     parent: parent?.id ? { connect: { id: parent.id } } : undefined,
-                },
+                }
             });
+
+            return {
+                message: 'Categoría creada exitosamente',
+                category: newCategory
+            };
         } catch (error: any) {
             if (error.code === 'P2002') {
-                throw new ConflictException(`Category already exists`);
+                throw new ConflictException(`Categoría ya existe`);
             }
             throw error;
         }

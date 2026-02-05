@@ -6,6 +6,6 @@ import { SalesController } from "./sales.controller";
     imports: [],
     controllers: [SalesController],
     providers: [SalesService],
-    exports: [],
+    exports: [SalesService],
 })
 export class SalesModule { }

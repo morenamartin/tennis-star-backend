@@ -8,6 +8,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { SalesModule } from './sales/sales.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { DashboardHomeModule } from './dashboard-home/dashboard-home.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     CategoriesModule,
     ProductsModule,
     SalesModule,
-    CloudinaryModule
+    CloudinaryModule,
+    DashboardHomeModule
   ],
   controllers: [AppController],
   providers: [AppService],
