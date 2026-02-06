@@ -168,6 +168,38 @@ export class ProductsService {
         });
     }
 
+    async getMoreSoldProducts() {
+        const topVariants = await this.prisma.saleItem.groupBy({
+            by: ['variantId'],
+            _sum: {
+                quantity: true,
+            },
+            orderBy: {
+                _sum: {
+                quantity: 'desc',
+                },
+            },
+            take: 5,
+        });
+        return this.prisma.productVariant.findMany({
+            where: {
+                id: {
+                    in: topVariants.map(v => v.variantId).filter((id): id is string => id !== null),
+                },
+            },
+            include: {
+                product: {
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        images: true,
+                    },
+                },
+            },
+        });
+    }
+
     async deleteProduct(productId: string) {
         try {
             return await this.prisma.product.delete({

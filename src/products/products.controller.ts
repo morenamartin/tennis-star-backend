@@ -17,6 +17,11 @@ export class ProductsController {
         return this.productsService.getAllProducts();
     }
 
+    @Get("more-sold")
+    async getMoreSoldProducts() {
+        return this.productsService.getMoreSoldProducts();
+    }
+
     @Get(":id")
     async getProductById(@Param("id") id: string) {
         return this.productsService.getProductById(id);

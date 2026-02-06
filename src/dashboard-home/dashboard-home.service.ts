@@ -13,6 +13,7 @@ export class DashboardHomeService {
     async getDataHome() {
         const products = await this.productsService.getAllProducts();
         const sales = await this.salesService.findAll();
+        const productsMoreSold = await this.productsService.getMoreSoldProducts();
 
         const totalPriceProducts = products.reduce((acc, product) => {
             const productSum = product.variants.reduce((total, variant) => total + variant.price.toNumber(), 0);
@@ -45,7 +46,8 @@ export class DashboardHomeService {
             products: dataProducts,
             totalPriceProducts: totalPriceProducts,
             totalProducts: totalProducts,
-            recentSales: recentSales
+            recentSales: recentSales,
+            productsMoreSold: productsMoreSold,
         };
 
         return data;
