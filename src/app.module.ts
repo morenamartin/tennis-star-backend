@@ -9,6 +9,7 @@ import { ProductsModule } from './products/products.module';
 import { SalesModule } from './sales/sales.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { DashboardHomeModule } from './dashboard-home/dashboard-home.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { DashboardHomeModule } from './dashboard-home/dashboard-home.module';
     ProductsModule,
     SalesModule,
     CloudinaryModule,
-    DashboardHomeModule
+    DashboardHomeModule,
+    ClientsModule
   ],
   controllers: [AppController],
   providers: [AppService],
