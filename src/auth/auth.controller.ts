@@ -10,7 +10,7 @@ import { LoginUserDto } from './dto/login-user-dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   async login(
@@ -23,6 +23,7 @@ export class AuthController {
     res.cookie('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      path: '/',
       sameSite: 'lax',
       maxAge: rememberMe
         ? 1000 * 60 * 60 * 24 * 30 // 30 días
@@ -31,6 +32,7 @@ export class AuthController {
 
     res.cookie('session_id', user.id, {
       secure: process.env.NODE_ENV === 'production',
+      path: '/',
       sameSite: 'lax',
       maxAge: rememberMe
         ? 1000 * 60 * 60 * 24 * 30 // 30 días
@@ -41,5 +43,25 @@ export class AuthController {
       success: true,
       user,
     };
+  }
+
+  @Post('sign-out')
+  async signOut(
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    res.clearCookie('session', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/', // 🔥 MISMO PATH
+    });
+
+    res.clearCookie('session_id', {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/', // 🔥 MISMO PATH
+    });
+
+    return { success: true };
   }
 }
