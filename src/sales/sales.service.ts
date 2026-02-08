@@ -40,7 +40,7 @@ export class SalesService {
         // 5. Create the sale with calculated data
         const { items, total, ...saleData } = data; // Exclude original items and total if provided
 
-        return this.prisma.sale.create({
+        const sale = await this.prisma.sale.create({
             data: {
                 ...saleData,
                 orderNumber,
@@ -54,6 +54,12 @@ export class SalesService {
                 items: true
             }
         });
+
+        return {
+            sale,
+            message: 'Venta creada exitosamente',
+            success: true
+        }
     }
 
 
@@ -76,7 +82,7 @@ export class SalesService {
     }
 
     async findAll() {
-        return this.prisma.sale.findMany({
+        const sales = await this.prisma.sale.findMany({
             select: {
                 id: true,
                 orderNumber: true,
@@ -88,10 +94,16 @@ export class SalesService {
                 client: { select: { name: true, email: true } }
             }
         })
+
+        return {
+            sales,
+            message: 'Ventas obtenidas exitosamente',
+            success: true
+        }
     }
 
     async findOne(id: string) {
-        return this.prisma.sale.findUnique({
+        const sale = await this.prisma.sale.findUnique({
             where: { id },
             include: {
                 client: { select: { id: true, name: true, email: true, phone: true } },
@@ -120,6 +132,12 @@ export class SalesService {
                 }
             }
         })
+
+        return {
+            sale,
+            message: 'Venta obtenida exitosamente',
+            success: true
+        }
     }
 
     async updateStatus(data: UpdateStatusDto) {
@@ -140,7 +158,11 @@ export class SalesService {
                 }
             });
 
-            return sale;
+            return {
+                sale,
+                message: 'Estado de la venta actualizado exitosamente',
+                success: true
+            }
         });
     }
 }

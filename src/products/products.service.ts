@@ -52,6 +52,11 @@ export class ProductsService {
             .map(attributes => ({ attributes }));
     }
 
+
+    async getBrands() {
+        return this.prisma.brand.findMany();
+    }
+
     async createProduct(product: CreateProductDto, images: Express.Multer.File[]) {
         const existingName = await this.prisma.product.findFirst({
             where: { name: product.name },
@@ -109,7 +114,6 @@ export class ProductsService {
 
         const imageUrls = uploadedImages.map(img => img.secure_url);
 
-
         if (!isValid) {
             throw new BadRequestException(
                 'Some variants do not match product options',
@@ -117,9 +121,15 @@ export class ProductsService {
         }
 
         try {
-            return await this.prisma.product.create({
+            const newProduct = await this.prisma.product.create({
                 data: {
                     ...rest,
+                    brand: {
+                        connectOrCreate: {
+                            where: { name: product.brand },
+                            create: { name: product.brand },
+                        },
+                    },
                     images: imageUrls,
                     stock: Number(product.stock),
                     category: { connect: { id: categoryId } },
@@ -131,10 +141,16 @@ export class ProductsService {
                     variants: true,
                 },
             });
+
+            return {
+                product: newProduct,
+                message: 'Producto creado exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2002') {
                 throw new ConflictException(
-                    `Product with this name or SKU already exists`,
+                    `El producto con este nombre o SKU ya existe`,
                 );
             }
             throw error;
@@ -176,10 +192,10 @@ export class ProductsService {
             },
             orderBy: {
                 _sum: {
-                quantity: 'desc',
+                    quantity: 'desc',
                 },
             },
-            take: 5,
+            take: 3,
         });
         return this.prisma.productVariant.findMany({
             where: {
@@ -202,22 +218,28 @@ export class ProductsService {
 
     async deleteProduct(productId: string) {
         try {
-            return await this.prisma.product.delete({
+            const deletedProduct = await this.prisma.product.delete({
                 where: { id: productId },
             });
+
+            return {
+                product: deletedProduct,
+                message: 'Producto eliminado exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
-                throw new NotFoundException(`Product with ID "${productId}" not found`);
+                throw new NotFoundException(`El producto con ID "${productId}" no fue encontrado`);
             }
             throw error;
         }
     }
 
     async updateProduct(productId: string, product: UpdateProductDto) {
-        const { categoryId, images, options, variants, ...rest } = product;
+        const { categoryId, images, options, variants, brandId, brand, ...rest } = product;
 
         try {
-            return await this.prisma.product.update({
+            const updatedProduct = await this.prisma.product.update({
                 where: { id: productId },
                 data: {
                     ...rest,
@@ -239,11 +261,27 @@ export class ProductsService {
                             create: variants,
                         },
                     }),
+                    ...(brandId ? {
+                        brand: { connect: { id: brandId } },
+                    } : brand ? {
+                        brand: {
+                            connectOrCreate: {
+                                where: { name: brand },
+                                create: { name: brand },
+                            },
+                        },
+                    } : {}),
                 },
             });
+
+            return {
+                product: updatedProduct,
+                message: 'Producto actualizado exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
-                throw new NotFoundException(`Product with ID "${productId}" not found`);
+                throw new NotFoundException(`El producto con ID "${productId}" no fue encontrado`);
             }
             throw error;
         }
@@ -255,7 +293,7 @@ export class ProductsService {
         });
 
         if (!existingProduct) {
-            throw new NotFoundException(`Product with ID "${productId}" not found`);
+            throw new NotFoundException(`El producto con ID "${productId}" no fue encontrado`);
         }
 
         let finalImages = product.images ? (Array.isArray(product.images) ? product.images : [product.images]) : [];
@@ -270,10 +308,10 @@ export class ProductsService {
             finalImages = [...finalImages, ...newImageUrls];
         }
 
-        const { categoryId, images, options, variants, ...rest } = product;
+        const { categoryId, images, options, variants, brandId, brand, ...rest } = product;
 
         try {
-            return await this.prisma.product.update({
+            const updatedProduct = await this.prisma.product.update({
                 where: { id: productId },
                 data: {
                     ...rest,
@@ -293,11 +331,27 @@ export class ProductsService {
                             create: variants,
                         },
                     }),
+                    ...(brandId ? {
+                        brand: { connect: { id: brandId } },
+                    } : brand ? {
+                        brand: {
+                            connectOrCreate: {
+                                where: { name: brand },
+                                create: { name: brand },
+                            },
+                        },
+                    } : {}),
                 },
             });
+
+            return {
+                product: updatedProduct,
+                message: 'Producto actualizado exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
-                throw new NotFoundException(`Product with ID "${productId}" not found`);
+                throw new NotFoundException(`El producto con ID "${productId}" no fue encontrado`);
             }
             throw error;
         }
@@ -305,16 +359,22 @@ export class ProductsService {
 
     async updateVariant(variantId: string, data: { price?: number; stock?: number }) {
         try {
-            return await this.prisma.productVariant.update({
+            const updatedVariant = await this.prisma.productVariant.update({
                 where: { id: variantId },
                 data: {
                     ...(data.price !== undefined && { price: data.price }),
                     ...(data.stock !== undefined && { stock: data.stock }),
                 },
             });
+
+            return {
+                variant: updatedVariant,
+                message: 'Variante actualizada exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
-                throw new NotFoundException(`Variant with ID "${variantId}" not found`);
+                throw new NotFoundException(`La variante con ID "${variantId}" no fue encontrada`);
             }
             throw error;
         }
@@ -322,12 +382,18 @@ export class ProductsService {
 
     async deleteVariant(variantId: string) {
         try {
-            return await this.prisma.productVariant.delete({
+            const deletedVariant = await this.prisma.productVariant.delete({
                 where: { id: variantId },
             });
+
+            return {
+                variant: deletedVariant,
+                message: 'Variante eliminada exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
-                throw new NotFoundException(`Variant with ID "${variantId}" not found`);
+                throw new NotFoundException(`La variante con ID "${variantId}" no fue encontrada`);
             }
             throw error;
         }

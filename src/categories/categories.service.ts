@@ -39,7 +39,8 @@ export class CategoriesService {
 
             return {
                 message: 'Categoría creada exitosamente',
-                category: newCategory
+                category: newCategory,
+                success: true
             };
         } catch (error: any) {
             if (error.code === 'P2002') {
@@ -89,10 +90,16 @@ export class CategoriesService {
             throw new ConflictException(`La posición ${position} ya está ocupada`);
         }
 
-        return this.prisma.category.update({
+        const updatedCategory = await this.prisma.category.update({
             where: { id: categoryId },
             data: { position },
         });
+
+        return {
+            category: updatedCategory,
+            message: 'Posición actualizada exitosamente',
+            success: true
+        }
     }
 
     async updateCategory(categoryId: string, data: { name?: string; position?: number; parentId?: string | null }) {
@@ -100,7 +107,7 @@ export class CategoriesService {
 
         if (data.name) updateData.name = data.name;
         if (data.position !== undefined) updateData.position = data.position;
-        
+
         if (data.parentId !== undefined) {
             if (data.parentId === null || data.parentId === 'root') {
                 updateData.parent = { disconnect: true };
@@ -110,7 +117,7 @@ export class CategoriesService {
         }
 
         try {
-            return await this.prisma.category.update({
+            const updatedCategory = await this.prisma.category.update({
                 where: { id: categoryId },
                 data: updateData,
                 include: {
@@ -118,6 +125,12 @@ export class CategoriesService {
                     subCategories: true,
                 },
             });
+
+            return {
+                category: updatedCategory,
+                message: 'Categoría actualizada exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
                 throw new NotFoundException(`Categoría con ID "${categoryId}" no encontrada`);
@@ -128,9 +141,15 @@ export class CategoriesService {
 
     async deleteCategory(categoryId: string) {
         try {
-            return await this.prisma.category.delete({
+            const deletedCategory = await this.prisma.category.delete({
                 where: { id: categoryId },
             });
+
+            return {
+                category: deletedCategory,
+                message: 'Categoría eliminada exitosamente',
+                success: true
+            }
         } catch (error: any) {
             if (error.code === 'P2025') {
                 throw new NotFoundException(`Category with ID "${categoryId}" not found`);

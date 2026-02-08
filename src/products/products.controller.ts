@@ -22,6 +22,11 @@ export class ProductsController {
         return this.productsService.getMoreSoldProducts();
     }
 
+    @Get("brands")
+    async getBrands() {
+        return this.productsService.getBrands();
+    }
+
     @Get(":id")
     async getProductById(@Param("id") id: string) {
         return this.productsService.getProductById(id);

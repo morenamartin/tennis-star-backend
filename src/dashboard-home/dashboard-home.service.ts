@@ -28,7 +28,7 @@ export class DashboardHomeService {
             }
         })
 
-        const dataSales = sales.map(sale => {
+        const dataSales = sales.sales.map(sale => {
             return {
                 client: sale.client.name,
                 orderNumber: sale.orderNumber,
@@ -50,6 +50,10 @@ export class DashboardHomeService {
             productsMoreSold: productsMoreSold,
         };
 
-        return data;
+        return {
+            data,
+            message: 'Datos obtenidos exitosamente',
+            success: true
+        };
     }
 }
