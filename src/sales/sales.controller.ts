@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { SalesService } from "./sales.service";
 import { CreateSalesDto } from "./dto/create-sales-dto";
-import { SaleStatus } from "generated/prisma/enums";
 import { UpdateStatusDto } from "./dto/update-status-dto";
 
 @Controller('sales')

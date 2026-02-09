@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { SaleStatus } from "generated/prisma/enums";
+import { SaleStatus } from "@prisma/client";
 
 export class UpdateStatusDto {
 
