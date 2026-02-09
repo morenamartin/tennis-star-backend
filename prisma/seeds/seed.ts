@@ -5,6 +5,7 @@ import { seedProducts } from './products.seed';
 import { seedClients } from './clients.seed';
 import { seedSales } from './sales.seed';
 import { seedBrands } from './brand.seed';
+import { seedUsers } from './user.seed';
 
 const prisma = new PrismaClient({
   log: ['info'],
@@ -13,6 +14,9 @@ const prisma = new PrismaClient({
 
 async function main() {
   console.log('Starting seed...');
+
+  await seedUsers(prisma);
+  console.log('Users seeded ✓');
 
   await seedBrands(prisma);
   console.log('Brands seeded ✓');
