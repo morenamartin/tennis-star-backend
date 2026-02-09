@@ -9,7 +9,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
-    origin: ["http://localhost:3000", "https://tennis-star.vercel.app"],
+    origin: [process.env.FRONTEND_URL],
     credentials: true,
   })
 
