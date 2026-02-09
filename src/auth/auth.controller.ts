@@ -26,7 +26,6 @@ export class AuthController {
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
       path: '/',
-      partitioned: true,
       maxAge: rememberMe
         ? 1000 * 60 * 60 * 24 * 30 // 30 días
         : 1000 * 60 * 60 * 2,     // 2 horas
@@ -36,7 +35,6 @@ export class AuthController {
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
       path: '/',
-      partitioned: true,
       maxAge: rememberMe
         ? 1000 * 60 * 60 * 24 * 30 // 30 días
         : 1000 * 60 * 60 * 2,     // 2 horas
