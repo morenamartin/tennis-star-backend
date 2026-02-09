@@ -10,7 +10,8 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [process.env.FRONTEND_URL],
-    credentials: true,
+    credentials: true, // Permite el intercambio de cookies
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   })
 
   await app.listen(process.env.PORT ?? 8080);
