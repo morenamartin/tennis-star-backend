@@ -106,7 +106,20 @@ export class CategoriesService {
         const updateData: any = {};
 
         if (data.name) updateData.name = data.name;
-        if (data.position !== undefined) updateData.position = data.position;
+        if (data.position !== undefined) {
+             // Verificar si la posición ya existe en otra categoría
+             const existingPosition = await this.prisma.category.findFirst({
+                where: {
+                    position: data.position,
+                    NOT: { id: categoryId },
+                },
+            });
+
+            if (existingPosition) {
+                throw new ConflictException(`La posición ${data.position} ya está ocupada`);
+            }
+            updateData.position = data.position;
+        }
 
         if (data.parentId !== undefined) {
             if (data.parentId === null || data.parentId === 'root') {

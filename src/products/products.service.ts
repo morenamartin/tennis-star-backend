@@ -47,6 +47,7 @@ export class ProductsService {
         );
     }
 
+    
     async previewVariants(options: { name: string; values: string[] }[]) {
         return this.generateVariantsFromOptions(options)
             .map(attributes => ({ attributes }));
@@ -164,6 +165,8 @@ export class ProductsService {
             include: {
                 options: true,
                 variants: true,
+                brand: true,
+                category: true,
             }
         });
     }
