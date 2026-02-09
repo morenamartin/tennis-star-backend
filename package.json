@@ -24,6 +24,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/cli": "^11.0.0",
     "@prisma/client": "5.22.0",
     "bcrypt": "^6.0.0",
     "buffer-to-stream": "^1.0.0",
@@ -37,7 +38,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.0",
@@ -86,6 +86,6 @@
   },
   "keywords": [],
   "prisma": {
-    "seed": "ts-node prisma/seeds/seed.ts"
+    "seed": "npx ts-node prisma/seeds/seed.ts"
   }
 }
